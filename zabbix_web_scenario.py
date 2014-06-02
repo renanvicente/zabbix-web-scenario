@@ -1,12 +1,20 @@
 #!/usr/bin/env python
 # coding: utf-8
+# Project Source: https://github.com/renanvicente/zabbix-web-scenario
+# Version:        0.0.1
+# Author:         Renan Vicente
+# Mail:           renanvice@gmail.com
+# Website:        http://www.renanvicente.com
+# Github:         https://www.github.com/renanvicente
+# Linkedin:       http://www.linkedin.com/pub/renan-silva/6a/802/59b/en
+
 from pyzabbix import ZabbixAPI
 import sys
 from re import compile,IGNORECASE
 reload(sys)
 sys.setdefaultencoding("utf-8")
 """
-Looks up a web scenario based on its name, and then create a web scenarios if it does not exits
+This is a script to add a web scenario and create a trigger.
 """
 
 # The hostname at which the Zabbix web interface is available
@@ -63,7 +71,7 @@ def create_by_file(auth, group, filename):
       create_web_scenario(auth,name,url,group)
 
 def create_trigger(auth,name,url,group):
-  triggers = auth.trigger.create(description=name,comments="O site abaixo não respondeu ao envio de solicitação HTTP (visitação ao site) no tempo de 120 segundos, este erro pode indicar que o site está offline ou está com instabilidade.\n%s" % url,expression='{%s:web.test.fail[%s].sum(120)}=1' % (group,name),priority=5)
+  triggers = auth.trigger.create(description=name,comments="The website below does not response the HTTP request ( visit website member ) at least 120 seconds, this warning means that the website is down or unstable.\n%s" % url,expression='{%s:web.test.fail[%s].sum(120)}=1' % (group,name),priority=5)
   return triggers
 
 
