@@ -51,24 +51,29 @@ def create_web_scenario(self,name,url,group,url_name='Homepage',status='200'):
       sys.exit(1)
 
 def create_by_file(auth, group, filename):
-  file_to_parse = open(filename,'r')
-  
-  for line in file_to_parse:
-    values = line.split(',')
+  try:
+    file_to_parse = open(filename,'r')
     try:
-      name = values[0]
-      url = values[1]
-    except IndexError, e:
-      print('Need at minimun 2 params Traceback %s:' % e)
-      sys.exit(1)
-    try:
-      url_name = values[2]
-    except IndexError:
-      url_name = None
-    if url_name:
-      create_web_scenario(auth,name,url,group,url_name)
-    else:
-      create_web_scenario(auth,name,url,group)
+      for line in file_to_parse:
+        values = line.split(',')
+        try:
+          name = values[0]
+          url = values[1]
+        except IndexError, e:
+          print('Need at minimun 2 params Traceback %s:' % e)
+          sys.exit(1)
+        try:
+          url_name = values[2]
+        except IndexError:
+          url_name = None
+        if url_name:
+          create_web_scenario(auth,name,url,group,url_name)
+        else:
+          create_web_scenario(auth,name,url,group)
+    finally:
+      file_to_parse.close()
+  except IOError:
+    print('could not open the file %s' % filename)
 
 def create_trigger(auth,name,url,group):
   triggers = auth.trigger.create(description=name,comments="The website below does not response the HTTP request ( visit website member ) at least 120 seconds, this warning means that the website is down or unstable.\n%s" % url,expression='{%s:web.test.fail[%s].sum(120)}=1' % (group,name),priority=5)
