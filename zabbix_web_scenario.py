@@ -37,20 +37,20 @@ def authentication(server_url,user,password):
     sys.exit(1)
 
 
-def create_web_scenario(self,name,url,group,hostid,url_name='Homepage',status='200'):
+def create_web_scenario(self,name,url,group,hostid,applicationid, url_name='Homepage',status='200'):
   request = ZabbixAPI.do_request(self, 'webcheck.get', params={ "filter": {"name": name}})
   if request['result']:
     print('Host "%s" already registered' % name)
     sys.exit(1)
   else:
     try:
-      ZabbixAPI.do_request(self, 'webcheck.create',params={"name": name,"hostid": hostid, "delay": '60',"retries": '3', "steps": [ { 'name': url_name, 'url': url,'status_codes': status, 'no': '1'} ] } )
+      ZabbixAPI.do_request(self, 'webcheck.create',params={"name": name,"hostid": hostid,"applicationid": applicationid, "delay": '60',"retries": '3', "steps": [ { 'name': url_name, 'url': url,'status_codes': status, 'no': '1'} ] } )
       triggers = create_trigger(auth,name,url,group)
     except Exception, e:
       print(e)
       sys.exit(1)
 
-def create_by_file(auth, group, hostid, filename):
+def create_by_file(auth, group, hostid, applicationid, filename):
   try:
     file_to_parse = open(filename,'r')
     try:
@@ -67,9 +67,9 @@ def create_by_file(auth, group, hostid, filename):
         except IndexError:
           url_name = None
         if url_name:
-          create_web_scenario(auth,name,url,group,hostid,url_name)
+          create_web_scenario(auth,name,url,group,hostid,applicationid, url_name)
         else:
-          create_web_scenario(auth,name,url,group,hostid)
+          create_web_scenario(auth,name,url,group,hostid, applicationid)
     finally:
       file_to_parse.close()
   except IOError:
@@ -93,21 +93,22 @@ if __name__ == '__main__':
   parser.add_option('-f','--file',dest='filename',help='File with Name,URL',metavar='FILE')
   parser.add_option('-g','--group-name',dest='group',help='Host Group Name',metavar='GROUP')
   parser.add_option('-i','--host-id',dest='hostid',help='Host ID',metavar='HOSTID')
+  parser.add_option('-a','--application-id',dest='applicationid',help='Application ID',metavar='Application ID')
   (options, args) = parser.parse_args()
   auth = authentication(options.server_url,options.user,options.password)
   if options.filename:
-    create_by_file(auth, options.group, options.hostid, options.filename)
+    create_by_file(auth, options.group, options.hostid, options.applicationid, options.filename)
   else:
     if not options.group:
       print('Group must be required')
       sys.exit(1)
     if options.status:
       if options.url_name:
-        web_scenario = create_web_scenario(auth, options.name,options.url,options.group, options.hostid, options.url_name,options.status)
+        web_scenario = create_web_scenario(auth, options.name,options.url,options.group, options.hostid, options.applicationid, options.url_name,options.status)
       else:
-        web_scenario = create_web_scenario(auth, options.name,None,options.url, options.group, options.hostid, options.status)
+        web_scenario = create_web_scenario(auth, options.name,None,options.url, options.group, options.hostid, options.applicationid, options.status)
     else:
       if options.url_name:
-        web_scenario = create_web_scenario(auth, options.name,options.url, options.group, options.hostid, options.url_name)
+        web_scenario = create_web_scenario(auth, options.name,options.url, options.group, options.hostid, options.applicationid, options.url_name)
       else:
-        web_scenario = create_web_scenario(auth, options.name,options.url, options.group, options.hostid)
+        web_scenario = create_web_scenario(auth, options.name,options.url, options.group, options.hostid, options.applicationid)
